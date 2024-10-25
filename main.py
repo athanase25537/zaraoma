@@ -1,9 +1,12 @@
 import tkinter as tk
-from tkinter import ttk
+import customtkinter as ctk
 from tkinter import messagebox
 import math
 from datetime import datetime
 from openpyxl import Workbook
+import pandas as pd
+import os
+
 
 # Classes pour la gestion des utilisateurs et factures
 class Personne:
@@ -51,7 +54,8 @@ class Facture:
             if moy_jiro > 35000: 
                 moy_jiro = max
                 fact_normal = math.ceil(moy_jiro / len(self.personnes))
-            fact_others = fact_normal + math.ceil(rest / len(other_type)) 
+            fact_others = fact_normal + math.ceil(rest / len(other_type))
+            rest = self.fact3 - moy_jiro 
         else: 
             fact_others = fact_normal
 
@@ -113,60 +117,118 @@ comboboxes = []
 spinboxes = []
 
 # Créer et éditer les utilisateurs
+def destroy(frame):
+    frame.destroy()
+    print('destroyed')
+
+def valideFistData():
+    if facture_entry1.get() == '' or facture_entry2.get() == '' or facture_entry3.get() == '' or number_user_entry.get() == '':
+        messagebox.showerror(message='Aucun champs de doit etre vide')
+    else:
+        try:
+            prod = float(facture_entry1.get()) * float(facture_entry2.get()) * float(facture_entry3.get())
+            editUser()
+        except Exception as e:
+            messagebox.showerror(message='Entrer des nombres dans les champs')
+            print(e)
+
+
 def editUser():
     newWindow = tk.Toplevel(window)
     newWindow.title('Ajouter les utilisateurs')
-    newWindow.geometry('700x700')
+    newWindow.geometry('700x680')
     
-    # Créer un canvas et une scrollbar
-    canvas = tk.Canvas(newWindow)
-    scrollbar = ttk.Scrollbar(newWindow, orient="vertical", command=canvas.yview)
-    scrollable_frame = ttk.Frame(canvas)
+    label_scroll = ctk.CTkLabel(newWindow, text="Remplir tous les champs s'il vous plait", font=('Arial', 20, 'bold'))
+    label_scroll.pack(pady=(30, 20))
+    
+    primary_frame = ctk.CTkFrame(newWindow, width=680, height=520, fg_color='#EBEBEB')
+    primary_frame.pack()
+    
+    scrollable_frame = ctk.CTkScrollableFrame(primary_frame, width=660, height=500, fg_color='#EBEBEB')
+    scrollable_frame.pack(pady=10)
 
-    scrollable_frame.bind(
-        "<Configure>",
-        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-    )
-
-    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-
-    # Configurer le canvas et la scrollbar
-    canvas.configure(yscrollcommand=scrollbar.set)
-
-    # Pack les éléments dans la fenêtre
-    canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
+    fname = 'users.xlsx'
+    i = 0
     k = 0
-    for i in range(0, int(number_user_entry.get())):
-        ttk.Label(scrollable_frame, text='Somme à payer').grid(row=k, column=3)
-        topay = ttk.Label(scrollable_frame, text='non défini')
-        topay.grid(row=k+1, column=3)
+    if os.path.exists(fname):
+        df = pd.read_excel(fname)
+        for i in range(df.shape[0]):
+            user_frame = ctk.CTkFrame(scrollable_frame,
+                                      corner_radius=10, 
+                                      fg_color='#DBDBDB')
+            user_frame.pack(pady=10, padx=10)
+            
+            ctk.CTkLabel(user_frame, text=f"Prénom user {i+1}").grid(row=k, column=0)
+            entry = ctk.CTkEntry(user_frame, bg_color='green')
+            entry.insert(0, df.iloc[i, 0])
+            entry.grid(row=k+1, column=0, padx=10, pady=10)
+            entries.append(entry)
 
-        ttk.Label(scrollable_frame, text=f"Prénom user (*) {k+1}").grid(row=k, column=0)
-        entry = ttk.Entry(scrollable_frame)
-        entry.grid(row=k+1, column=0)
+            ctk.CTkLabel(user_frame, text='Type d\'utilisateur').grid(row=k, column=1)
+            combobox = ctk.CTkComboBox(user_frame, values=['Normale', 'Autre'])
+            if df.iloc[i, 1] == True: combobox.set('Autre')
+            else: combobox.set('Normale')
+            combobox.grid(row=k+1, column=1, padx=10, pady=10)
+            comboboxes.append(combobox)
+
+            ctk.CTkLabel(user_frame, text='Absence (jour)').grid(row=k, column=2, padx=10)
+            spinbox = ctk.CTkEntry(user_frame)
+            spinbox.grid(row=k+1, column=2, padx=10, pady=10)
+            spinbox.insert(0, 0)
+            spinboxes.append(spinbox)
+            
+            supprButton = ctk.CTkButton(user_frame, 
+                                        text='Supprimer', 
+                                        fg_color='red', 
+                                        text_color='white',
+                                        width=30,
+                                        command=lambda f=user_frame: destroy(f))
+            supprButton.grid(row=k+1, column=3, padx=10)
+            k += 2
+            
+    for i in range(i, int(number_user_entry.get())+i):
+        user_frame = ctk.CTkFrame(scrollable_frame, border_color='red', corner_radius=10, fg_color='#DBDBDB')
+        
+        user_frame.pack(pady=10, padx=10)
+        
+        ctk.CTkLabel(user_frame, text=f"Prénom user {i+1}").grid(row=k, column=0)
+        entry = ctk.CTkEntry(user_frame, bg_color='green')
+        entry.grid(row=k+1, column=0, padx=10, pady=10)
         entries.append(entry)
 
-        ttk.Label(scrollable_frame, text='Type d\'utilisateur (*)').grid(row=k, column=1)
-        combobox = ttk.Combobox(scrollable_frame, values=['Normale', 'Autre'])
-        combobox.grid(row=k+1, column=1)
+        ctk.CTkLabel(user_frame, text='Type d\'utilisateur').grid(row=k, column=1)
+        combobox = ctk.CTkComboBox(user_frame, values=['Normale', 'Autre'])
+        combobox.grid(row=k+1, column=1, padx=10, pady=10)
         comboboxes.append(combobox)
 
-        ttk.Label(scrollable_frame, text='Nombre de jours d\'absence').grid(row=k, column=2)
-        spinbox = ttk.Spinbox(scrollable_frame, from_=0, to='infinity')
-        spinbox.grid(row=k+1, column=2)
+        ctk.CTkLabel(user_frame, text='Absence (jour)').grid(row=k, column=2, padx=10)
+        spinbox = ctk.CTkEntry(user_frame)
+        spinbox.grid(row=k+1, column=2, padx=10, pady=10)
+        spinbox.insert(0, 0)
         spinboxes.append(spinbox)
+        
+        supprButton = ctk.CTkButton(user_frame, 
+                                    text='Supprimer', 
+                                    fg_color='red', 
+                                    text_color='white',
+                                    width=30,
+                                    command=lambda f=user_frame: destroy(f))
+        supprButton.grid(row=k+1, column=3, padx=10)
         k += 2
 
-    btn_validate = ttk.Button(scrollable_frame, text='Sauvegarder', command=validateData)
-    btn_validate.grid(row=k, column=1)
+    btn_validate = ctk.CTkButton(newWindow, text='Sauvegarder', command=validateData)
+    btn_validate.pack(pady=10)
 
 # Valider les données saisies
 def validateData():
     personnes = []
 
     # Validation des données entrées
+    w = Workbook()
+    sh = w.active
+    sh.append(['Prenom', 'Type'])
+    fname = 'users.xlsx'
+    
     for i in range(len(entries)):
         if entries[i].get() == '':
             messagebox.showerror(title='Données invalides', message='Le champ prénom est obligatoire')
@@ -177,18 +239,22 @@ def validateData():
             messagebox.showerror(title='Données invalides', message='Choisir entre utilisateur normal ou autre')
             return
         type_user = comboboxes[i].get()
+        
         if type_user == 'Normale' : type_user = False
         else: type_user = True
 
+        user_type = 'Normale'
+        if type_user : user_type = 'Autre'
+        sh.append([name, user_type])
         missing_day = int(spinboxes[i].get())
 
         # Création d'un objet Personne
         p = Personne(name, missing_day, type_user)
         personnes.append(p)
-        print(p.type)
-
-    # Simuler les valeurs des factures
-    facture = Facture(66986.98, 58352.98, 63965.08, personnes)
+    w.save(fname)
+    
+    # Calcul de la part de chacun
+    facture = Facture(float(facture_entry1.get()), float(facture_entry2.get()), float(facture_entry3.get()), personnes)
     facture.get_facture()
 
     # Générer le fichier Excel
@@ -207,26 +273,50 @@ def validateData():
     for p in personnes:
         sheet.append([p.get_name(), f"{p.get_fact():,}".replace(',', ' ') + " ar", f"{math.ceil(p.get_fact() * 0.01) * 100:,}".replace(',', ' ') + " ar"])
 
-    sheet.append(['', '', facture.get_total(), f"{math.ceil(facture.get_total() * 0.01) * 100:,}".replace(',', ' ') + " ar"])
+    sheet.append(['', facture.get_total(), f"{math.ceil(facture.get_total() * 0.01) * 100:,}".replace(',', ' ') + " ar"])
     # Sauvegarder le fichier Excel
     workbook.save(filename)
 
     messagebox.showinfo(title='Facture générée', message=f"Facture générée dans le fichier : {filename}")
 
 # Fenêtre principale Tkinter
-window = tk.Tk()
+window = ctk.CTk()
 window.title('Zaraoma')
 window.geometry('400x400')
 
+# Titre
+label = ctk.CTkLabel(window, text='Veuillez remplir tous les champs', font=('Arial',23))
+label.pack(pady=20)
+
+# CTK Frame
+mainFrame = ctk.CTkFrame(window)
+mainFrame.pack(pady=20)
+
+# Ajout 2 derniers facture
+facture_label1 = ctk.CTkLabel(mainFrame, text='Facture du 2e mois recent:')
+facture_label1.grid(row=0, column=0, padx=10, pady=10)
+facture_entry1 = ctk.CTkEntry(mainFrame)
+facture_entry1.grid(row=0, column=1, padx=10, pady=10)
+
+facture_label2 = ctk.CTkLabel(mainFrame, text='Facture du 1er mois recent:')
+facture_label2.grid(row=1, column=0, padx=10, pady=10)
+facture_entry2 = ctk.CTkEntry(mainFrame)
+facture_entry2.grid(row=1, column=1)
+
+facture_label3 = ctk.CTkLabel(mainFrame, text='Facture a payer (ce mois):')
+facture_label3.grid(row=2, column=0, padx=10, pady=10)
+facture_entry3 = ctk.CTkEntry(mainFrame)
+facture_entry3.grid(row=2, column=1, padx=10, pady=10)
+
 # Ajout d'utilisateur
-number_user_label = ttk.Label(window, text='Entrer le nombre d\'utilisateurs')
-number_user_label.pack(pady=50)
+number_user_label = ctk.CTkLabel(mainFrame, text='Nombre d\'utilisateurs (nouveau):')
+number_user_label.grid(row=3, column=0, padx=10, pady=10)
 
-number_user_entry = ttk.Spinbox(window, from_=1, to='infinity')
-number_user_entry.pack(pady=5)
+number_user_entry = ctk.CTkEntry(mainFrame)
+number_user_entry.grid(row=3, column=1)
 
-btn = ttk.Button(window, text='Valider', command=editUser)
-btn.pack()
+btn = ctk.CTkButton(mainFrame, text='Valider', command=valideFistData)
+btn.grid(row=4, column=1, pady=10)
 
 # Exécution de l'application
 window.mainloop()
