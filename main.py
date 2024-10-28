@@ -57,6 +57,7 @@ class Facture:
             fact_others = fact_normal + math.ceil(rest / len(other_type))
             rest = self.fact3 - moy_jiro 
         else: 
+            fact_normal = self.fact3/len(self.personnes)
             fact_others = fact_normal
 
         # Facture initiale pour tous les types
@@ -230,15 +231,21 @@ def validateData():
     fname = 'users.xlsx'
     
     for i in range(len(entries)):
-        if entries[i].get() == '':
-            messagebox.showerror(title='Données invalides', message='Le champ prénom est obligatoire')
-            return
-        name = entries[i].get()
+        try:
+            if entries[i].get() == '':
+                messagebox.showerror(title='Données invalides', message='Le champ prénom est obligatoire')
+                return
+            name = entries[i].get()
+        except:
+            continue
 
-        if comboboxes[i].get() == '':
-            messagebox.showerror(title='Données invalides', message='Choisir entre utilisateur normal ou autre')
-            return
-        type_user = comboboxes[i].get()
+        try:
+            if comboboxes[i].get() == '':
+                messagebox.showerror(title='Données invalides', message='Choisir entre utilisateur normal ou autre')
+                return
+            type_user = comboboxes[i].get()
+        except:
+            continue
         
         if type_user == 'Normale' : type_user = False
         else: type_user = True
