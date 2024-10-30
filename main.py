@@ -124,6 +124,70 @@ errors_miss = []
 firstname = []
 errors_main = []
 
+def add_user(entry, scrollable_frame, btn_validate, k):
+    print('add')
+    if entry.get() == '' or not entry.get().isdigit(): entry.configure(border_color='#D9534F')
+    else:
+        for i in range(int(entry.get())):
+            print(i)
+            user_frame = ctk.CTkFrame(scrollable_frame, 
+                                  corner_radius=10,
+                                  fg_color='#DBDBDB',)
+        
+            user_frame.pack(pady=10, padx=10)
+            
+            ctk.CTkLabel(user_frame, text=f"Prénom user {i+1}").grid(row=k, column=0)
+            entry = ctk.CTkEntry(user_frame, 
+                                border_color='#F27438',)
+            
+            entry.grid(row=k+1, column=0, padx=10, pady=10)
+            entries.append(entry)
+
+            ctk.CTkLabel(user_frame, text='Type d\'utilisateur').grid(row=k, column=1)
+            combobox = ctk.CTkComboBox(user_frame, 
+                                    values=['Normale', 'Autre'],
+                                    border_color='#F27438',
+                                    button_color='#F27438')
+            combobox.grid(row=k+1, column=1, padx=10, pady=10)
+            
+            comboboxes.append(combobox)
+
+            ctk.CTkLabel(user_frame, text='Absence (jour)').grid(row=k, column=2, padx=10)
+            spinbox = ctk.CTkEntry(user_frame,
+                                border_color='#F27438',)
+            spinbox.grid(row=k+1, column=2, padx=10, pady=10)
+            spinbox.insert(0, 0)
+            spinboxes.append(spinbox)
+            
+            supprButton = ctk.CTkButton(user_frame, 
+                                        text='Supprimer', 
+                                        text_color='white',
+                                        fg_color='#D9534F',
+                                        hover_color='#C9302C',
+                                        width=30,
+                                        command=lambda f=user_frame: destroy(scrollable_frame, f, btn_validate))
+            supprButton.grid(row=k+1, column=3, padx=10)
+            
+            error_label_name = ctk.CTkLabel(user_frame, 
+                                        text='',
+                                        text_color='#D9534F')
+            error_label_name.grid(row=k+2, column=0)
+            errors_name.append(error_label_name)
+            
+            
+            error_label_type = ctk.CTkLabel(user_frame, 
+                                        text='',
+                                        text_color='#D9534F')
+            error_label_type.grid(row=k+2, column=1)
+            errors_type.append(error_label_type)
+            
+            error_label_miss = ctk.CTkLabel(user_frame, 
+                                        text='',
+                                        text_color='#D9534F')
+            error_label_miss.grid(row=k+2, column=2)
+            errors_miss.append(error_label_miss)
+            k += 3
+
 def check_valider_activation():
     entree = [facture_entry1, facture_entry2, facture_entry3, number_user_entry]
     i = 0
@@ -209,13 +273,16 @@ def editUser():
     newWindow.geometry('700x680')
     
     label_scroll = ctk.CTkLabel(newWindow, text="Remplir tous les champs s'il vous plait", font=('Arial', 20, 'bold'))
-    label_scroll.pack(pady=(30, 20))
+    label_scroll.pack(pady=10)
     
-    primary_frame = ctk.CTkFrame(newWindow, width=680, height=520, fg_color='#EBEBEB')
+    primary_frame = ctk.CTkFrame(newWindow, width=680, height=520, fg_color='#424340')
     primary_frame.pack()
     
-    scrollable_frame = ctk.CTkScrollableFrame(primary_frame, width=660, height=500, fg_color='#EBEBEB')
-    scrollable_frame.pack(pady=10)
+    scrollable_frame = ctk.CTkScrollableFrame(primary_frame, 
+                                              width=600, 
+                                              height=450, 
+                                              fg_color='#EBEBEB')
+    scrollable_frame.pack(pady=10, padx=10)
 
     dirname = 'utilisateurs'
     fname = 'users.xlsx'
@@ -227,7 +294,7 @@ def editUser():
             user_frame = ctk.CTkFrame(scrollable_frame,
                                       corner_radius=10, 
                                       fg_color='#DBDBDB')
-            user_frame.pack(pady=10, padx=10)
+            user_frame.pack(pady=10, padx=5)
             
             ctk.CTkLabel(user_frame, text=f"Prénom user {i+1}").grid(row=k, column=0)
             entry = ctk.CTkEntry(user_frame,
@@ -287,7 +354,7 @@ def editUser():
                                   corner_radius=10,
                                   fg_color='#DBDBDB',)
         
-        user_frame.pack(pady=10, padx=10)
+        user_frame.pack(pady=10, padx=5)
         
         ctk.CTkLabel(user_frame, text=f"Prénom user {i+1}").grid(row=k, column=0)
         entry = ctk.CTkEntry(user_frame, 
@@ -340,27 +407,54 @@ def editUser():
         error_label_miss.grid(row=k+2, column=2)
         errors_miss.append(error_label_miss)
         k += 3
-    btn_validate = ctk.CTkButton(newWindow, 
-                                 text='Sauvegarder', 
-                                 text_color='white',
-                                 fg_color='#F27438',
-                                 hover_color='#D86228',
-                                 state='normal',
-                                 command=lambda: validateData(newWindow))
+    
+    
+    # Add button
+    user_frame = ctk.CTkFrame(primary_frame, 
+                              corner_radius=10,
+                              fg_color='#EBEBEB')
+        
+    user_frame.pack(pady=(0, 10))
+    
+    add_entry_frame = ctk.CTkFrame(user_frame,
+                                   corner_radius=10,
+                                   fg_color='#EBEBEB')
+    add_entry_frame.pack(side=ctk.LEFT, pady=30, padx=(0,136))
+    add_label = ctk.CTkLabel(add_entry_frame,
+                             text='Entrer nommbre d\'utilisateur',)
+    add_label.pack(side=ctk.LEFT, padx=(10, 12))
+    add_entry = ctk.CTkEntry(add_entry_frame)
+    add_entry.pack(side=ctk.RIGHT)
+    
+    btn_add = ctk.CTkButton(user_frame,
+                            text='Ajouter',
+                            command=lambda: add_user(add_entry, scrollable_frame, btn_validate, k))
+    btn_add.pack(side=ctk.RIGHT, pady=30, padx=10)
+    
+    # Save and back button
+    save_back_frame = ctk.CTkFrame(newWindow, width=680)
+    save_back_frame.pack()
+    btn_validate = ctk.CTkButton(save_back_frame, 
+                                text='Sauvegarder', 
+                                text_color='white',
+                                fg_color='#F27438',
+                                hover_color='#D86228',
+                                state='normal',
+                                command=lambda: validateData(newWindow))
+
+
     btn_validate.pack(side=ctk.RIGHT,
                       pady=10,
                       padx=68)
-    btn_back = ctk.CTkButton(newWindow,
+    btn_back = ctk.CTkButton(save_back_frame,
                              text='Retour',
                              width=80,
                              command=lambda: destroyFrame(newWindow))
-    btn_back.pack(side=ctk.LEFT,
-                  padx=57)
-    
+    btn_back.pack(side=ctk.RIGHT)
+
 # Valider les données saisies
 def validateData(newWindow):
     personnes = []
-    print("entries"+ str(len(entries)))
     # Validation des données entrées
     w = Workbook()
     sh = w.active
