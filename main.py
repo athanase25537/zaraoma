@@ -6,7 +6,7 @@ from datetime import datetime
 from openpyxl import Workbook
 import pandas as pd
 import os
-
+import time
 
 # Classes pour la gestion des utilisateurs et factures
 class Personne:
@@ -117,6 +117,15 @@ entries = []
 comboboxes = []
 spinboxes = []
 
+def hide():
+    for i in range(101):
+        progressBar.set(i / 100)  # Met à jour la barre de progression
+        splash_percentage
+        splash_percentage.configure(text='Loading... '+str(int(i/100*100))+'%')
+        splash_screen.update_idletasks()  # Met à jour l'interface pour afficher la progression
+        time.sleep(0.03)
+    splash_screen.destroy()
+    
 # Créer et éditer les utilisateurs
 def destroy(frame):
     frame.destroy()
@@ -148,7 +157,7 @@ def editUser():
     scrollable_frame = ctk.CTkScrollableFrame(primary_frame, width=660, height=500, fg_color='#EBEBEB')
     scrollable_frame.pack(pady=10)
 
-    fname = 'users.xlsx'
+    fname = 'utilisateurs/users.xlsx'
     i = 0
     k = 0
     if os.path.exists(fname):
@@ -228,7 +237,7 @@ def validateData():
     w = Workbook()
     sh = w.active
     sh.append(['Prenom', 'Type'])
-    fname = 'users.xlsx'
+    fname = 'utilisateurs/users.xlsx'
     
     for i in range(len(entries)):
         try:
@@ -266,7 +275,7 @@ def validateData():
 
     # Générer le fichier Excel
     current_time = datetime.now().strftime("%y-%m-%d") + str(int(datetime.now().timestamp()))
-    filename = f"facture-{current_time}.xlsx"
+    filename = f"factures/facture-{current_time}.xlsx"
 
     # Utilisation d'openpyxl pour créer un fichier Excel
     workbook = Workbook()
@@ -285,6 +294,45 @@ def validateData():
     workbook.save(filename)
 
     messagebox.showinfo(title='Facture générée', message=f"Facture générée dans le fichier : {filename}")
+
+# Splash screen
+splash_screen_width = 650
+splash_screen_height = 400
+
+# splash_screen = ctk.CTk(fg_color='#3030ff')
+splash_screen = ctk.CTk()
+splash_screen.overrideredirect(True)
+
+
+# Obtenir la taille de l'écran
+screen_width = splash_screen.winfo_screenwidth()
+screen_height = splash_screen.winfo_screenheight()
+
+# Calculer la position pour centrer la fenêtre
+x = (screen_width // 2) - (splash_screen_width // 2)
+y = (screen_height // 2) - (splash_screen_height // 2)
+
+# Appliquer la taille et la position centrée
+splash_screen.geometry(f"{splash_screen_width}x{splash_screen_height}+{x}+{y}")
+
+splash_text = ctk.CTkLabel(splash_screen,
+                           text='ZARAOMA', 
+                           font=('Arial', 50, 'bold'))
+splash_description = ctk.CTkLabel(splash_screen, 
+                                  text='Partage équitable en Eau et Electricite', 
+                                  font=('Arial', 18, 'italic'))
+splash_text.pack(pady=(100, 0))
+splash_description.pack(pady=10)
+splash_percentage = ctk.CTkLabel(splash_screen, text='Loading ... 0%')
+splash_percentage.pack(pady=5)
+
+# Progress Bar
+progressBar = ctk.CTkProgressBar(splash_screen, orientation='HORIZONTAL', mode='determinate', width=300)
+progressBar.set(0)
+progressBar.pack(pady=10)
+
+splash_screen.after(5000, hide)
+splash_screen.mainloop()
 
 # Fenêtre principale Tkinter
 window = ctk.CTk()
