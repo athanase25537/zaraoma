@@ -72,15 +72,15 @@ class Facture:
         differents = self.get_personne_of_day_different()
 
         # S'il y a des exceptions
-        if len(differents) > 0:
-            rest_normal = 0
-            rest_others = 0
-            cpt_normal = len(normal_type)
-            cpt_others = len(other_type)
+        rest_normal = 0
+        rest_others = 0
+        cpt_normal = len(normal_type)
+        cpt_others = len(other_type)
 
-            fact_a_day_normal = math.ceil(fact_normal / 30)  # Facture par jour pour type normal
-            fact_a_day_others = math.ceil(fact_others / 30)  # Facture par jour pour type autres
+        fact_a_day_normal = math.ceil(fact_normal / 30)  # Facture par jour pour type normal
+        fact_a_day_others = math.ceil(fact_others / 30)  # Facture par jour pour type autres
 
+        if len(differents) > 1:
             for p in differents:
                 if p.type:
                     p.fact = fact_others - (fact_a_day_others * p.missing_day)
@@ -97,6 +97,20 @@ class Facture:
                         p.fact += math.ceil(rest_others / cpt_others)
                     elif not p.type and cpt_normal > 0:
                         p.fact += math.ceil(rest_normal / cpt_normal)
+                        
+        elif len(differents) > 0:
+            for p in differents:
+                if p.type:
+                    p.fact = fact_others - (fact_a_day_others * p.missing_day)
+                    rest = self.fact3 - (fact_normal * (len(self.personnes) - 1)) - p.fact
+                else:
+                    p.fact = fact_normal - (fact_a_day_normal * p.missing_day)
+                    rest = fact_normal - p.fact
+                
+                
+            for p in self.personnes:
+                if p not in differents:
+                    p.fact += rest / (len(self.personnes) - 1)
 
     def get_type(self):
         types = {'normal': [], 'others': []}
@@ -125,11 +139,9 @@ firstname = []
 errors_main = []
 
 def add_user(entry, scrollable_frame, btn_validate, k):
-    print('add')
     if entry.get() == '' or not entry.get().isdigit(): entry.configure(border_color='#D9534F')
     else:
         for i in range(int(entry.get())):
-            print(i)
             user_frame = ctk.CTkFrame(scrollable_frame, 
                                   corner_radius=10,
                                   fg_color='#DBDBDB',)
@@ -263,8 +275,6 @@ def valideFistData():
             editUser()
         except Exception as e:
             messagebox.showerror(message='Entrer des nombres dans les champs')
-            print(e)
-
 
 def editUser():
     newWindow = tk.Toplevel(window)
@@ -465,7 +475,6 @@ def validateData(newWindow):
     
     errorData = []
     for i in range(0, len(entries)):
-        print("i="+str(i))
         try:
             parent = newWindow.nametowidget(entries[i].winfo_parent())
             errorContainer = parent.nametowidget(errors_name[i])
@@ -474,9 +483,7 @@ def validateData(newWindow):
                 errorData.append(False)
                 # return
             elif i >= len(firstname) and (entries[i].get().lower() in firstname):
-                print(i)
                 errorContainer.configure(text=entries[i].get()+' existe déjà')
-                print(len(firstname))
                 errorData.append(False)
             else: 
                 errorContainer.configure(text='')
@@ -574,21 +581,23 @@ y = (screen_height // 2) - (splash_screen_height // 2)
 # Appliquer la taille et la position centrée
 splash_screen.geometry(f"{splash_screen_width}x{splash_screen_height}+{x}+{y}")
 
-# Convertir le SVG en PNG temporairement
+'''
+Convertir le SVG en PNG temporairement
 svg_path = "src/img/zr-logo.svg"
 png_path = "src/img/zr-logo.png" 
 
 svg_to_png(svg_path, png_path)
 
-# Charger l'image PNG convertie avec Pillow
+Charger l'image PNG convertie avec Pillow
 image = Image.open(png_path)
 image = ImageTk.PhotoImage(image)
 
-# Insert Logo
+Insert Logo
 logo = ctk.CTkLabel(splash_screen, 
                     image=image,
                     text='')
 logo.pack(pady=(50,0))
+'''
 
 splash_text = ctk.CTkLabel(splash_screen,
                            text='ZARAOMA', 
