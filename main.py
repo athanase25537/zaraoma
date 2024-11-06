@@ -17,6 +17,7 @@ class Personne:
         self.missing_day = missing_day
         self.type = type
         self.fact = 0
+        self.water = 0
 
     def get_name(self):
         return self.name
@@ -24,22 +25,32 @@ class Personne:
     def get_fact(self):
         return self.fact
 
+    def get_water(self):
+        return self.water
+    
     def get_missing_day(self):
         return self.missing_day
 
 class Facture:
-    def __init__(self, fact1: int, fact2: int, fact3: int, personnes: list):
+    def __init__(self, fact1: int, fact2: int, fact3: int, fact_water: int, personnes: list):
         self.fact1 = fact1
         self.fact2 = fact2
         self.fact3 = fact3
+        self.fact_water = fact_water
         self.personnes = personnes
         
     def get_total(self):
         sum = 0
         for p in self.personnes:
             sum += p.fact
-
         return sum
+    
+    def get_total_water(self):
+        sum = 0
+        for p in self.personnes:
+            sum += p.water
+        return sum
+    
     def get_facture(self):
         max = 35000
         moy_jiro = math.ceil((self.fact1 + self.fact2 + self.fact3) / 3)  # Moyenne des 3 derniers mois
@@ -84,10 +95,12 @@ class Facture:
             for p in differents:
                 if p.type:
                     p.fact = fact_others - (fact_a_day_others * p.missing_day)
+                    if p.fact < 0: p.fact = 0
                     rest_others += (fact_others - p.fact)
                     cpt_others -= 1
                 else:
                     p.fact = fact_normal - (fact_a_day_normal * p.missing_day)
+                    if p.fact < 0: p.fact = 0
                     rest_normal += (fact_normal - p.fact)
                     cpt_normal -= 1
 
@@ -102,15 +115,48 @@ class Facture:
             for p in differents:
                 if p.type:
                     p.fact = fact_others - (fact_a_day_others * p.missing_day)
+                    if p.fact < 0: p.fact = 0
                     rest = self.fact3 - (fact_normal * (len(self.personnes) - 1)) - p.fact
                 else:
                     p.fact = fact_normal - (fact_a_day_normal * p.missing_day)
+                    if p.fact < 0: p.fact = 0
                     rest = fact_normal - p.fact
                 
                 
             for p in self.personnes:
                 if p not in differents:
-                    p.fact += rest / (len(self.personnes) - 1)
+                    p.fact += math.ceil(rest / (len(self.personnes) - 1))
+
+        total = self.get_total()
+        if total < self.fact3:
+            rest = self.fact3 - total
+            for p in self.personnes:
+                if p not in differents:
+                    p.fact += math.ceil(rest / ((len(self.personnes)-len(differents))))
+        print("total: ",self.get_total())
+        
+    def get_facture_water(self):
+        # someone part
+        fact_all = math.ceil(self.fact_water / len(self.personnes))
+        print(fact_all)
+        for p in self.personnes:
+            p.water = fact_all
+            
+        # if there exception
+        differents = self.get_personne_of_day_different()
+        if len(differents) > 0:
+            fact_water_a_day = math.ceil(fact_all / 30)
+            rest = 0
+            cpt = len(self.personnes)
+            for p in differents:
+                p.water = fact_all - (fact_water_a_day * p.missing_day)
+                if p.water < 0: p.water = 0
+                rest += (fact_all - p.water)
+                cpt -= 1
+                
+            for p in self.personnes:
+                if p not in differents and cpt > 0:
+                    p.water += math.ceil(rest / cpt) 
 
     def get_type(self):
         types = {'normal': [], 'others': []}
@@ -148,7 +194,7 @@ def add_user(entry, scrollable_frame, btn_validate, k):
         
             user_frame.pack(pady=10, padx=10)
             
-            ctk.CTkLabel(user_frame, text=f"Prénom user {i+1}").grid(row=k, column=0)
+            ctk.CTkLabel(user_frame, text=f"Prénom utilisateur").grid(row=k, column=0)
             entry = ctk.CTkEntry(user_frame, 
                                 border_color='#F27438',)
             
@@ -201,7 +247,7 @@ def add_user(entry, scrollable_frame, btn_validate, k):
             k += 3
 
 def check_valider_activation():
-    entree = [facture_entry1, facture_entry2, facture_entry3, number_user_entry, water_entry]
+    entree = [facture_entry1, facture_entry2, facture_entry3, water_entry, number_user_entry]
     i = 0
     there_are_error = []
     for entry in entree:
@@ -306,7 +352,7 @@ def editUser():
                                       fg_color='#DBDBDB')
             user_frame.pack(pady=10, padx=5)
             
-            ctk.CTkLabel(user_frame, text=f"Prénom user {i+1}").grid(row=k, column=0)
+            ctk.CTkLabel(user_frame, text=f"Prénom utilisateur").grid(row=k, column=0)
             entry = ctk.CTkEntry(user_frame,
                                  border_color='#F27438')
             entry.insert(0, df.iloc[i, 0].capitalize())
@@ -318,7 +364,7 @@ def editUser():
             combobox = ctk.CTkComboBox(user_frame, values=['Normale', 'Autre'],
                                        border_color='#F27438',
                                        button_color='#F27438')
-            if df.iloc[i, 1] == True: combobox.set('Autre')
+            if df.iloc[i, 1] == 'Autre': combobox.set('Autre')
             else: combobox.set('Normale')
             combobox.grid(row=k+1, column=1, padx=10, pady=10)
             comboboxes.append(combobox)
@@ -366,7 +412,7 @@ def editUser():
         
         user_frame.pack(pady=10, padx=5)
         
-        ctk.CTkLabel(user_frame, text=f"Prénom user {i+1}").grid(row=k, column=0)
+        ctk.CTkLabel(user_frame, text=f"Prénom utilisateur").grid(row=k, column=0)
         entry = ctk.CTkEntry(user_frame, 
                              border_color='#F27438',)
         
@@ -481,7 +527,9 @@ def validateData(newWindow):
             if entries[i].get() == '':
                 errorContainer.configure(text='Le prénom ne doit pas être vide')
                 errorData.append(False)
-                # return
+            elif entries[i].get().isdigit():
+                errorContainer.configure(text='Le prénom n\'est pas un nombre')
+                errorData.append(False)
             elif i >= len(firstname) and (entries[i].get().lower() in firstname):
                 errorContainer.configure(text=entries[i].get()+' existe déjà')
                 errorData.append(False)
@@ -505,8 +553,14 @@ def validateData(newWindow):
             continue
         try:
             errorContainer = parent.nametowidget(errors_miss[i])
-            if spinboxes[i].get() == '' or int(spinboxes[i].get()) < 0:
-                errorContainer.configure(text='Absence ne peut être vide ou négatif')
+            if spinboxes[i].get() == '':
+                errorContainer.configure(text='Absence ne peut être vide')
+                errorData.append(False)
+            elif int(spinboxes[i].get()) < 0:
+                errorContainer.configure(text='Absence ne peut être négatif')
+                errorData.append(False)
+            elif int(spinboxes[i].get()) > 30:
+                errorContainer.configure(text='Absence max est 30 jours')
                 errorData.append(False)
             else: 
                 errorContainer.configure(text='')
@@ -530,8 +584,9 @@ def validateData(newWindow):
     w.save(os.path.join(dirname, fname))
     
     # Calcul de la part de chacun
-    facture = Facture(float(facture_entry1.get()), float(facture_entry2.get()), float(facture_entry3.get()), personnes)
+    facture = Facture(float(facture_entry1.get()), float(facture_entry2.get()), float(facture_entry3.get()), float(water_entry.get()), personnes)
     facture.get_facture()
+    facture.get_facture_water()
 
     # Générer le fichier Excel
     current_time = datetime.now().strftime("%y-%m-%d") + str(int(datetime.now().timestamp()))
@@ -544,13 +599,31 @@ def validateData(newWindow):
     sheet.title = "Factures"
 
     # Ajouter les en-têtes de colonnes
-    sheet.append(['Prénom', 'Valeur réelle', 'Net à payer'])
+    sheet.append([
+                    'Prénom', 
+                    'Valeur réelle Electricité', 
+                    'Net à payer Electricité', 
+                    'Valeur réelle Eau', 
+                    'Net à payer Eau'
+                ])
 
     # Ajouter les données des utilisateurs
     for p in personnes:
-        sheet.append([p.get_name(), f"{p.get_fact():,}".replace(',', ' ') + " ar", f"{math.ceil(p.get_fact() * 0.01) * 100:,}".replace(',', ' ') + " ar"])
+        sheet.append([
+                        p.get_name(), 
+                        f"{p.get_fact():,}".replace(',', ' ') + " ar", 
+                        f"{math.ceil(p.get_fact() * 0.01) * 100:,}".replace(',', ' ') + " ar",
+                        f"{p.get_water():,}".replace(',', ' ') + " ar", 
+                        f"{math.ceil(p.get_water() * 0.01) * 100:,}".replace(',', ' ') + " ar"
+                    ])
 
-    sheet.append(['', facture.get_total(), f"{math.ceil(facture.get_total() * 0.01) * 100:,}".replace(',', ' ') + " ar"])
+    sheet.append([
+                    '', 
+                    facture.get_total(), 
+                    f"{math.ceil(facture.get_total() * 0.01) * 100:,}".replace(',', ' ') + " ar",
+                    facture.get_total_water(), 
+                    f"{math.ceil(facture.get_total_water() * 0.01) * 100:,}".replace(',', ' ') + " ar"
+                ])
     # Sauvegarder le fichier Excel
     workbook.save(os.path.join(folder_name, filename))
 
