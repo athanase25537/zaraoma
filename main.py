@@ -201,7 +201,7 @@ def add_user(entry, scrollable_frame, btn_validate, k):
             k += 3
 
 def check_valider_activation():
-    entree = [facture_entry1, facture_entry2, facture_entry3, number_user_entry]
+    entree = [facture_entry1, facture_entry2, facture_entry3, number_user_entry, water_entry]
     i = 0
     there_are_error = []
     for entry in entree:
@@ -556,10 +556,11 @@ def validateData(newWindow):
 
     messagebox.showinfo(title='Facture générée', message=f"Facture générée dans le fichier : {filename}")
 
+'''
 # Fonction pour convertir un fichier SVG en image compatible
 def svg_to_png(svg_path, output_path):
     cairosvg.svg2png(url=svg_path, write_to=output_path)
-    
+'''    
 
 # Splash screen
 splash_screen_width = 550
@@ -607,7 +608,7 @@ splash_description = ctk.CTkLabel(splash_screen,
                                   text='Partage équitable en Eau et Electricité', 
                                   font=('Arial', 18, 'italic'),
                                   text_color='#333333')
-splash_text.pack(pady=(10, 0))
+splash_text.pack(pady=(80, 0))
 splash_description.pack(pady=10)
 splash_percentage = ctk.CTkLabel(splash_screen, 
                                  text='Loading ... 0%',
@@ -632,7 +633,7 @@ splash_screen.mainloop()
 window = ctk.CTk()
 window.resizable(False, False)
 window.title('Zaraoma')
-window.geometry('400x400')
+window.geometry('450x550')
 
 # Titre
 label = ctk.CTkLabel(window, text='Veuillez remplir tous les champs', font=('Arial',23))
@@ -640,54 +641,78 @@ label.pack(pady=20)
 
 # CTK Frame
 mainFrame = ctk.CTkFrame(window)
-mainFrame.pack(pady=20)
+mainFrame.pack(pady=(10,20))
+
+# light frame
+light_frame = tk.LabelFrame(mainFrame, text="Electricité")
+light_frame.pack(pady=5, padx=10)
 
 # Ajout 2 derniers facture
-facture_label1 = ctk.CTkLabel(mainFrame, text='Facture du 2e mois recent:')
-facture_label1.grid(row=0, column=0, padx=10)
-facture_entry1 = ctk.CTkEntry(mainFrame,
+facture_label1 = ctk.CTkLabel(light_frame, text='Facture 2e mois recent:')
+facture_label1.grid(row=1, column=0, padx=10)
+facture_entry1 = ctk.CTkEntry(light_frame,
                               border_color='#F27438',)
 facture_entry1.bind("<KeyRelease>", on_entry_change)
-facture_entry1.grid(row=0, column=1, padx=10, pady=(10, 0))
-error_fact1 = ctk.CTkLabel(mainFrame, 
+facture_entry1.grid(row=1, column=1, padx=(37, 10), pady=(10, 0))
+error_fact1 = ctk.CTkLabel(light_frame, 
                            text='', 
                            text_color='#D9534F',)
-error_fact1.grid(row=1, column=1, pady=1)
+error_fact1.grid(row=2, column=1, pady=1)
 errors_main.append(error_fact1)
 
-facture_label2 = ctk.CTkLabel(mainFrame, text='Facture du 1er mois recent:')
-facture_label2.grid(row=2, column=0, padx=10)
-facture_entry2 = ctk.CTkEntry(mainFrame,
+facture_label2 = ctk.CTkLabel(light_frame, text='Facture 1er mois recent:')
+facture_label2.grid(row=3, column=0, padx=10)
+facture_entry2 = ctk.CTkEntry(light_frame,
                               border_color='#F27438',)
 facture_entry2.bind("<KeyRelease>", on_entry_change)
-facture_entry2.grid(row=2, column=1)
-error_fact2 = ctk.CTkLabel(mainFrame, text='', text_color='#D9534F')
-error_fact2.grid(row=3, column=1, pady=1)
+facture_entry2.grid(row=3, column=1, padx=(37, 10))
+error_fact2 = ctk.CTkLabel(light_frame, text='', text_color='#D9534F')
+error_fact2.grid(row=4, column=1, pady=1)
 errors_main.append(error_fact2)
 
-facture_label3 = ctk.CTkLabel(mainFrame, text='Facture a payer (ce mois):')
-facture_label3.grid(row=4, column=0, padx=10)
-facture_entry3 = ctk.CTkEntry(mainFrame,
+facture_label3 = ctk.CTkLabel(light_frame, text='Facture a payer (ce mois):')
+facture_label3.grid(row=5, column=0, padx=10)
+facture_entry3 = ctk.CTkEntry(light_frame,
                               border_color='#F27438',)
 facture_entry3.bind("<KeyRelease>", on_entry_change)
-facture_entry3.grid(row=4, column=1, padx=10)
-error_fact3 = ctk.CTkLabel(mainFrame, text='', text_color='#D9534F')
-error_fact3.grid(row=5, column=1, pady=1)
+facture_entry3.grid(row=5, column=1, padx=(37, 10))
+error_fact3 = ctk.CTkLabel(light_frame, text='', text_color='#D9534F')
+error_fact3.grid(row=6, column=1, pady=1)
 errors_main.append(error_fact3)
 
-# Ajout d'utilisateur
-number_user_label = ctk.CTkLabel(mainFrame, text='Nombre d\'utilisateurs (nouveau):')
-number_user_label.grid(row=6, column=0, padx=10)
+# water frame
+water_frame = tk.LabelFrame(mainFrame, text="Eau")
+water_frame.pack(pady=5, padx=10)
 
-number_user_entry = ctk.CTkEntry(mainFrame,
+water_label = ctk.CTkLabel(water_frame, text='Facture a payer (ce mois):')
+water_label.grid(row=0, column=0, padx=10)
+
+water_entry = ctk.CTkEntry(water_frame,
+                                 border_color='#F27438',)
+water_entry.bind("<KeyRelease>", on_entry_change)
+water_entry.grid(row=0, column=1, padx=(37, 10))
+error_water = ctk.CTkLabel(water_frame, 
+                                 text='', text_color='#D9534F')
+error_water.grid(row=1, column=1, pady=1)
+errors_main.append(error_water)
+
+# Add user number
+user_number_frame = tk.LabelFrame(mainFrame, text="Utilisateur")
+user_number_frame.pack(pady=5, padx=10)
+
+number_user_label = ctk.CTkLabel(user_number_frame, text='Nombre d\'utilisateurs (nouveau):')
+number_user_label.grid(row=0, column=0, padx=10)
+
+number_user_entry = ctk.CTkEntry(user_number_frame,
                                  border_color='#F27438',)
 number_user_entry.bind("<KeyRelease>", on_entry_change)
-number_user_entry.grid(row=6, column=1)
-error_number_user = ctk.CTkLabel(mainFrame, 
+number_user_entry.grid(row=0, column=1, padx=(0, 10))
+error_number_user = ctk.CTkLabel(user_number_frame, 
                                  text='', text_color='#D9534F')
-error_number_user.grid(row=7, column=1, pady=1)
+error_number_user.grid(row=1, column=1, pady=1)
 errors_main.append(error_number_user)
 
+# validate button
 btn = ctk.CTkButton(mainFrame, 
                     text='Valider', 
                     text_color='white',
@@ -695,7 +720,7 @@ btn = ctk.CTkButton(mainFrame,
                     hover_color='#D86228',
                     state='disabled',
                     command=valideFistData)
-btn.grid(row=8, column=1, pady=10)
+btn.pack(pady=10)
 
 # Exécution de l'application
 window.mainloop()
