@@ -269,6 +269,7 @@ def check_valider_activation():
             errCont.configure(text='')
             there_are_error.append(True)
         i += 1
+        if i >= len(errors_main): i = 0
     if not False in there_are_error: btn.configure(state="normal")
 
 def on_entry_change(event=None):
@@ -520,6 +521,13 @@ def validateData(newWindow):
     if not os.path.exists(os.path.join(dirname, fname)): os.makedirs(dirname, exist_ok=True)
     
     errorData = []
+    index_firstname = []
+    firstname = []
+    for i in range(len(entries)):
+        if entries[i].get().lower() not in firstname:
+            firstname.append(entries[i].get().lower())
+        else: index_firstname.append(i)
+    
     for i in range(0, len(entries)):
         try:
             parent = newWindow.nametowidget(entries[i].winfo_parent())
@@ -530,7 +538,7 @@ def validateData(newWindow):
             elif entries[i].get().isdigit():
                 errorContainer.configure(text='Le prénom n\'est pas un nombre')
                 errorData.append(False)
-            elif i >= len(firstname) and (entries[i].get().lower() in firstname):
+            elif i in index_firstname:
                 errorContainer.configure(text=entries[i].get()+' existe déjà')
                 errorData.append(False)
             else: 
