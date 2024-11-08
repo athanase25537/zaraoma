@@ -326,8 +326,21 @@ def valideFistData():
 def editUser():
     newWindow = tk.Toplevel(window)
     newWindow.resizable(False, False)
+    
+    newWindow_screen_width = 700
+    newWindow_screen_height = 680
+    
+    # user screen width and height
+    screen_width = newWindow.winfo_screenwidth()
+    screen_height = newWindow.winfo_screenheight()
+
+    # Calculer la position pour centrer la fenêtre
+    x = (screen_width // 2) - (newWindow_screen_width // 2)
+    y = (screen_height // 2) - (newWindow_screen_height // 2)
+
+    # Appliquer la taille et la position centrée
     newWindow.title('Ajouter les utilisateurs')
-    newWindow.geometry('700x680')
+    newWindow.geometry(f"{newWindow_screen_width}x{newWindow_screen_height}+{x}+{y}")
     
     label_scroll = ctk.CTkLabel(newWindow, text="Remplir tous les champs s'il vous plait", font=('Arial', 20, 'bold'))
     label_scroll.pack(pady=10)
@@ -714,7 +727,19 @@ splash_screen.mainloop()
 window = ctk.CTk()
 window.resizable(False, False)
 window.title('Zaraoma')
-window.geometry('450x550')
+
+window_screen_width = 450
+window_screen_height = 550
+
+screen_width = window.winfo_screenwidth()
+screen_height = window.winfo_screenheight()
+
+# Calculer la position pour centrer la fenêtre
+x = (screen_width // 2) - (window_screen_width // 2)
+y = (screen_height // 2) - (window_screen_height // 2)
+
+# Appliquer la taille et la position centrée
+window.geometry(f"{window_screen_width}x{window_screen_height}+{x}+{y}")
 
 # Titre
 label = ctk.CTkLabel(window, text='Veuillez remplir tous les champs', font=('Arial',23))
