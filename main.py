@@ -7,8 +7,8 @@ from openpyxl import Workbook
 import pandas as pd
 import os
 import time
-from PIL import Image, ImageTk
-import cairosvg
+# from PIL import Image, ImageTk
+# import cairosvg
 
 # Classes pour la gestion des utilisateurs et factures
 class Personne:
@@ -116,13 +116,17 @@ class Facture:
                 if p.type:
                     p.fact = fact_others - (fact_a_day_others * p.missing_day)
                     if p.fact < 0: p.fact = 0
-                    rest = self.fact3 - (fact_normal * (len(self.personnes) - 1)) - p.fact
+                    if len(other_type) > 1:
+                        rest = self.fact3 - (fact_normal * len(normal_type)) - (fact_others * (len(other_type)-1)) - p.fact
                 else:
                     p.fact = fact_normal - (fact_a_day_normal * p.missing_day)
                     if p.fact < 0: p.fact = 0
-                    rest = fact_normal - p.fact
-                
-                
+                    if len(normal_type) > 1:
+                        rest = self.fact3 - (fact_normal * (len(normal_type) - 1)) - (fact_others * len(other_type)) - p.fact
+                    
+            if len(other_type) > 1 and len(normal_type) > 1: 
+                rest_others = (2 * rest) / 3 
+                rest_normal = (1 * rest) / 3
             for p in self.personnes:
                 if p not in differents:
                     p.fact += math.ceil(rest / (len(self.personnes) - 1))
@@ -133,7 +137,6 @@ class Facture:
             for p in self.personnes:
                 if p not in differents:
                     p.fact += math.ceil(rest / ((len(self.personnes)-len(differents))))
-        print("total: ",self.get_total())
         
     def get_facture_water(self):
         # someone part
@@ -625,7 +628,8 @@ def validateData(newWindow):
                     'Valeur réelle Electricité', 
                     'Net à payer Electricité', 
                     'Valeur réelle Eau', 
-                    'Net à payer Eau'
+                    'Net à payer Eau',
+                    'Total à payer'
                 ])
 
     # Ajouter les données des utilisateurs
@@ -635,16 +639,30 @@ def validateData(newWindow):
                         f"{p.get_fact():,}".replace(',', ' ') + " ar", 
                         f"{math.ceil(p.get_fact() * 0.01) * 100:,}".replace(',', ' ') + " ar",
                         f"{p.get_water():,}".replace(',', ' ') + " ar", 
-                        f"{math.ceil(p.get_water() * 0.01) * 100:,}".replace(',', ' ') + " ar"
+                        f"{math.ceil(p.get_water() * 0.01) * 100:,}".replace(',', ' ') + " ar",
+                        f"{math.ceil(p.get_water() * 0.01) * 100 + math.ceil(p.get_fact() * 0.01) * 100:,}".replace(',', ' ') + " ar"
                     ])
-
+    sheet.append([''])
     sheet.append([
-                    '', 
-                    facture.get_total(), 
+                    'Total', 
+                    f"{math.ceil(facture.get_total()):,}".replace(',', ' ') + " ar", 
                     f"{math.ceil(facture.get_total() * 0.01) * 100:,}".replace(',', ' ') + " ar",
-                    facture.get_total_water(), 
-                    f"{math.ceil(facture.get_total_water() * 0.01) * 100:,}".replace(',', ' ') + " ar"
+                    f"{math.ceil(facture.get_total_water()):,}".replace(',', ' ') + " ar", 
+                    f"{math.ceil(facture.get_total_water() * 0.01) * 100:,}".replace(',', ' ') + " ar",
+                    f"{math.ceil(facture.get_total_water() * 0.01) * 100 + math.ceil(facture.get_total() * 0.01) * 100:,}".replace(',', ' ') + " ar"
                 ])
+    sheet.append([''])
+    sheet.append([
+        'Facture Electricité ce mois',
+        'Facture Eau ce mois',
+        'Total facture ce mois'
+    ])
+    
+    sheet.append([
+        f"{float(facture_entry3.get()):,}".replace(',', ' ') + " ar",  
+        f"{float(water_entry.get()):,}".replace(',', ' ') + " ar", 
+        f"{float(facture_entry3.get()) + float(water_entry.get()):,}".replace(',', ' ') + " ar", 
+    ])
     # Sauvegarder le fichier Excel
     workbook.save(os.path.join(folder_name, filename))
 
@@ -754,7 +772,7 @@ light_frame = tk.LabelFrame(mainFrame, text="Electricité")
 light_frame.pack(pady=5, padx=10)
 
 # Ajout 2 derniers facture
-facture_label1 = ctk.CTkLabel(light_frame, text='Facture 2e mois recent:')
+facture_label1 = ctk.CTkLabel(light_frame, text='Facture 2e mois récent:')
 facture_label1.grid(row=1, column=0, padx=10)
 facture_entry1 = ctk.CTkEntry(light_frame,
                               border_color='#F27438',)
@@ -766,7 +784,7 @@ error_fact1 = ctk.CTkLabel(light_frame,
 error_fact1.grid(row=2, column=1, pady=1)
 errors_main.append(error_fact1)
 
-facture_label2 = ctk.CTkLabel(light_frame, text='Facture 1er mois recent:')
+facture_label2 = ctk.CTkLabel(light_frame, text='Facture 1er mois récent:')
 facture_label2.grid(row=3, column=0, padx=10)
 facture_entry2 = ctk.CTkEntry(light_frame,
                               border_color='#F27438',)
@@ -776,7 +794,7 @@ error_fact2 = ctk.CTkLabel(light_frame, text='', text_color='#D9534F')
 error_fact2.grid(row=4, column=1, pady=1)
 errors_main.append(error_fact2)
 
-facture_label3 = ctk.CTkLabel(light_frame, text='Facture a payer (ce mois):')
+facture_label3 = ctk.CTkLabel(light_frame, text='Facture à payer (ce mois):')
 facture_label3.grid(row=5, column=0, padx=10)
 facture_entry3 = ctk.CTkEntry(light_frame,
                               border_color='#F27438',)
@@ -790,7 +808,7 @@ errors_main.append(error_fact3)
 water_frame = tk.LabelFrame(mainFrame, text="Eau")
 water_frame.pack(pady=5, padx=10)
 
-water_label = ctk.CTkLabel(water_frame, text='Facture a payer (ce mois):')
+water_label = ctk.CTkLabel(water_frame, text='Facture à payer (ce mois):')
 water_label.grid(row=0, column=0, padx=10)
 
 water_entry = ctk.CTkEntry(water_frame,
