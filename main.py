@@ -141,7 +141,6 @@ class Facture:
     def get_facture_water(self):
         # someone part
         fact_all = math.ceil(self.fact_water / len(self.personnes))
-        print(fact_all)
         for p in self.personnes:
             p.water = fact_all
             
